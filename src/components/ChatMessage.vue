@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useClipboard } from '@vueuse/core'
+import { computed } from "vue"
+import { useClipboard } from "@vueuse/core"
 
 interface Message {
   id: string
-  role: 'user' | 'assistant'
+  role: "user" | "assistant"
   content: string
   timestamp: Date
 }
@@ -17,11 +17,11 @@ const props = defineProps<Props>()
 
 const { copy, copied } = useClipboard()
 
-const isUser = computed(() => props.message.role === 'user')
-const formattedTime = computed(() => 
-  props.message.timestamp.toLocaleTimeString([], { 
-    hour: '2-digit', 
-    minute: '2-digit' 
+const isUser = computed(() => props.message.role === "user")
+const formattedTime = computed(() =>
+  props.message.timestamp.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
   })
 )
 
@@ -32,51 +32,38 @@ const copyMessage = () => {
 // Simple markdown-like formatting for links and basic formatting
 const formattedContent = computed(() => {
   let content = props.message.content
-  
+
   // Convert URLs to clickable links
-  content = content.replace(
-    /(https?:\/\/[^\s]+)/g, 
-    '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
-  )
-  
+  content = content.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>')
+
   // Basic formatting
-  content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-  content = content.replace(/\*(.*?)\*/g, '<em>$1</em>')
-  content = content.replace(/`(.*?)`/g, '<code>$1</code>')
-  
+  content = content.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+  content = content.replace(/\*(.*?)\*/g, "<em>$1</em>")
+  content = content.replace(/`(.*?)`/g, "<code>$1</code>")
+
   return content
 })
 </script>
 
 <template>
-  <div 
-    class="message-wrapper"
-    :class="{ 'user-message': isUser, 'assistant-message': !isUser }"
-  >
+  <div class="message-wrapper" :class="{ 'user-message': isUser, 'assistant-message': !isUser }">
     <div class="message">
       <div class="message-header">
         <div class="avatar">
-          {{ isUser ? '👤' : '🤖' }}
+          {{ isUser ? "👤" : "🤖" }}
         </div>
         <div class="sender">
-          {{ isUser ? 'You' : 'Grok' }}
+          {{ isUser ? "You" : "Grok" }}
         </div>
         <div class="timestamp">
           {{ formattedTime }}
         </div>
-        <button 
-          @click="copyMessage"
-          class="copy-button"
-          :title="copied ? 'Copied!' : 'Copy message'"
-        >
-          {{ copied ? '✅' : '📋' }}
+        <button @click="copyMessage" class="copy-button" :title="copied ? 'Copied!' : 'Copy message'">
+          {{ copied ? "✅" : "📋" }}
         </button>
       </div>
-      
-      <div 
-        class="message-content"
-        v-html="formattedContent"
-      ></div>
+
+      <div class="message-content" v-html="formattedContent"></div>
     </div>
   </div>
 </template>
@@ -178,7 +165,7 @@ const formattedContent = computed(() => {
   background: rgba(0, 0, 0, 0.1);
   padding: 0.2rem 0.4rem;
   border-radius: 4px;
-  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  font-family: "Monaco", "Menlo", "Consolas", monospace;
   font-size: 0.9em;
 }
 
@@ -200,11 +187,11 @@ const formattedContent = computed(() => {
     max-width: 85%;
     min-width: 150px;
   }
-  
+
   .message-header {
     font-size: 0.8rem;
   }
-  
+
   .avatar {
     font-size: 1rem;
   }

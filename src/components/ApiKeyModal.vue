@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch } from "vue"
 
 interface Props {
   show: boolean
@@ -8,9 +8,9 @@ interface Props {
 }
 
 interface Emits {
-  (e: 'update:show', value: boolean): void
-  (e: 'update:api-key', value: string): void
-  (e: 'update:use-proxy', value: boolean): void
+  (e: "update:show", value: boolean): void
+  (e: "update:api-key", value: string): void
+  (e: "update:use-proxy", value: boolean): void
 }
 
 const props = defineProps<Props>()
@@ -21,21 +21,27 @@ const localUseProxy = ref(props.useProxy || false)
 const showKey = ref(false)
 
 // Watch for prop changes
-watch(() => props.apiKey, (newKey) => {
-  localApiKey.value = newKey
-})
+watch(
+  () => props.apiKey,
+  (newKey) => {
+    localApiKey.value = newKey
+  }
+)
 
-watch(() => props.useProxy, (newUseProxy) => {
-  localUseProxy.value = newUseProxy || false
-})
+watch(
+  () => props.useProxy,
+  (newUseProxy) => {
+    localUseProxy.value = newUseProxy || false
+  }
+)
 
 const closeModal = () => {
-  emit('update:show', false)
+  emit("update:show", false)
 }
 
 const saveApiKey = () => {
-  emit('update:api-key', localApiKey.value.trim())
-  emit('update:use-proxy', localUseProxy.value)
+  emit("update:api-key", localApiKey.value.trim())
+  emit("update:use-proxy", localUseProxy.value)
   closeModal()
 }
 
@@ -45,7 +51,7 @@ const toggleShowKey = () => {
 
 // Close modal on ESC key
 const handleKeydown = (event: KeyboardEvent) => {
-  if (event.key === 'Escape') {
+  if (event.key === "Escape") {
     closeModal()
   }
 }
@@ -57,28 +63,19 @@ const stopPropagation = (event: Event) => {
 </script>
 
 <template>
-  <div 
-    v-if="show"
-    class="modal-overlay"
-    @click="closeModal"
-    @keydown="handleKeydown"
-    tabindex="0"
-  >
-    <div 
-      class="modal-content"
-      @click="stopPropagation"
-    >
+  <div v-if="show" class="modal-overlay" @click="closeModal" @keydown="handleKeydown" tabindex="0">
+    <div class="modal-content" @click="stopPropagation">
       <div class="modal-header">
         <h2>⚙️ Settings</h2>
         <button @click="closeModal" class="close-button">×</button>
       </div>
-      
+
       <div class="modal-body">
         <p class="description">
-          Enter your xAI API key to start chatting with Grok 4. You can get your API key from the 
+          Enter your xAI API key to start chatting with Grok 4. You can get your API key from the
           <a href="https://console.x.ai/" target="_blank" rel="noopener noreferrer">xAI Console</a>.
         </p>
-        
+
         <div class="input-group">
           <label for="api-key-input">🔑 xAI API Key:</label>
           <div class="input-with-toggle">
@@ -90,33 +87,29 @@ const stopPropagation = (event: Event) => {
               class="api-key-input"
               @keydown.enter="saveApiKey"
             />
-            <button 
+            <button
               @click="toggleShowKey"
               class="toggle-visibility"
               type="button"
               :title="showKey ? 'Hide API key' : 'Show API key'"
             >
-              {{ showKey ? '🙈' : '👁️' }}
+              {{ showKey ? "🙈" : "👁️" }}
             </button>
           </div>
         </div>
 
         <div class="input-group">
           <label class="checkbox-label">
-            <input
-              type="checkbox"
-              v-model="localUseProxy"
-              class="checkbox"
-            />
+            <input type="checkbox" v-model="localUseProxy" class="checkbox" />
             <span class="checkmark"></span>
             🌐 Use Proxy Server (Recommended for CORS issues)
           </label>
           <p class="setting-description">
-            Enable this to route API requests through a local proxy server at localhost:3001. 
-            This helps avoid CORS errors and makes the app work better on mobile devices.
+            Enable this to route API requests through a local proxy server at localhost:3001. This helps avoid CORS
+            errors and makes the app work better on mobile devices.
           </p>
         </div>
-        
+
         <div class="security-note">
           <p>🔒 <strong>Security Note:</strong></p>
           <ul>
@@ -125,12 +118,10 @@ const stopPropagation = (event: Event) => {
             <li>For mobile export, the key won't be included in the HTML file</li>
           </ul>
         </div>
-        
+
         <div class="cors-note">
           <p>🌐 <strong>CORS Information:</strong></p>
-          <p>
-            This app works directly with xAI's API from the browser. If you encounter CORS errors:
-          </p>
+          <p>This app works directly with xAI's API from the browser. If you encounter CORS errors:</p>
           <ul>
             <li>Try using a CORS proxy browser extension</li>
             <li>Or consider setting up a simple backend proxy</li>
@@ -138,18 +129,10 @@ const stopPropagation = (event: Event) => {
           </ul>
         </div>
       </div>
-      
+
       <div class="modal-footer">
-        <button @click="closeModal" class="btn btn-secondary">
-          Cancel
-        </button>
-        <button 
-          @click="saveApiKey" 
-          class="btn btn-primary"
-          :disabled="!localApiKey.trim()"
-        >
-          💾 Save Settings
-        </button>
+        <button @click="closeModal" class="btn btn-secondary">Cancel</button>
+        <button @click="saveApiKey" class="btn btn-primary" :disabled="!localApiKey.trim()">💾 Save Settings</button>
       </div>
     </div>
   </div>
@@ -251,7 +234,7 @@ const stopPropagation = (event: Event) => {
   border-radius: 8px;
   font-size: 1rem;
   transition: border-color 0.2s;
-  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  font-family: "Monaco", "Menlo", "Consolas", monospace;
 }
 
 .api-key-input:focus {
@@ -295,7 +278,8 @@ const stopPropagation = (event: Event) => {
   line-height: 1.4;
 }
 
-.security-note, .cors-note {
+.security-note,
+.cors-note {
   background: #f8f9fa;
   border-left: 4px solid #667eea;
   padding: 1rem;
@@ -303,18 +287,21 @@ const stopPropagation = (event: Event) => {
   margin-bottom: 1rem;
 }
 
-.security-note p, .cors-note p {
+.security-note p,
+.cors-note p {
   margin: 0 0 0.5rem 0;
   color: #333;
 }
 
-.security-note ul, .cors-note ul {
+.security-note ul,
+.cors-note ul {
   margin: 0.5rem 0 0 0;
   padding-left: 1.5rem;
   color: #666;
 }
 
-.security-note li, .cors-note li {
+.security-note li,
+.cors-note li {
   margin-bottom: 0.25rem;
 }
 
@@ -364,16 +351,18 @@ const stopPropagation = (event: Event) => {
     margin: 1rem;
     max-width: none;
   }
-  
-  .modal-header, .modal-body, .modal-footer {
+
+  .modal-header,
+  .modal-body,
+  .modal-footer {
     padding-left: 1rem;
     padding-right: 1rem;
   }
-  
+
   .modal-footer {
     flex-direction: column;
   }
-  
+
   .btn {
     width: 100%;
   }

@@ -3,18 +3,27 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
     "server": "tsx server.ts",
     "server:dev": "nodemon --exec tsx server.ts",
-    "full-dev": "concurrently \"npm run server:dev\" \"npm run dev\""
+    "full-dev": "concurrently \"npm run server:dev\" \"npm run dev\"",
+    "build-only": "vite build",
+    "start": "npm run build && npm run server"
   },
   "dependencies": {
     "@vueuse/core": "^13.5.0",
     "axios": "^1.10.0",
-    "vue": "^3.5.17"
+    "vue": "^3.5.17",
+    "express": "^5.1.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.0",
+    "tsx": "^4.20.3"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
@@ -22,11 +31,7 @@
     "@vitejs/plugin-vue": "^6.0.0",
     "@vue/tsconfig": "^0.7.0",
     "concurrently": "^9.2.0",
-    "cors": "^2.8.5",
-    "dotenv": "^17.2.0",
-    "express": "^5.1.0",
     "nodemon": "^3.1.10",
-    "tsx": "^4.20.3",
     "typescript": "~5.8.3",
     "vite": "^7.0.4",
     "vue-tsc": "^2.2.12"

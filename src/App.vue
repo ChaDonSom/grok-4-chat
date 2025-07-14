@@ -58,7 +58,8 @@ const sendMessage = async () => {
 
     if (useProxy.value) {
       // Use local proxy server to avoid CORS
-      response = await fetch("http://localhost:3001/api/chat", {
+      const apiUrl = import.meta.env.PROD ? "/api/chat" : "http://localhost:3001/api/chat"
+      response = await fetch(apiUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -5,7 +5,7 @@ A modern Vue 3 chat application for interacting with xAI's Grok 4 model. Built w
 ## ✨ Features
 
 - 💬 **Real-time Chat**: Interactive chat interface with Grok 4
-- 🔑 **Secure API Key Management**: Local storage with privacy protection  
+- 🔑 **Secure API Key Management**: Local storage with privacy protection
 - 🌐 **CORS Solution**: Built-in proxy server to avoid CORS issues
 - 📱 **Mobile Friendly**: Responsive design that works on all devices
 - 📁 **Export Capability**: Download chat history as HTML files for offline viewing
@@ -15,18 +15,21 @@ A modern Vue 3 chat application for interacting with xAI's Grok 4 model. Built w
 ## 🚦 Getting Started
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - npm or yarn
 - xAI API key from [console.x.ai](https://console.x.ai)
 
 ### Installation
 
 1. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 2. **Start the development server**
+
    ```bash
    # Option 1: Frontend only (may have CORS issues)
    npm run dev
@@ -43,7 +46,7 @@ A modern Vue 3 chat application for interacting with xAI's Grok 4 model. Built w
 ## 🛠️ Available Scripts
 
 - `npm run dev` - Start frontend development server
-- `npm run server` - Start proxy server only  
+- `npm run server` - Start proxy server only
 - `npm run server:dev` - Start proxy server with auto-reload
 - `npm run full-dev` - Start both frontend and proxy server
 - `npm run build` - Build for production
@@ -52,12 +55,15 @@ A modern Vue 3 chat application for interacting with xAI's Grok 4 model. Built w
 ## 🌐 CORS Solutions
 
 ### Option 1: Proxy Server (Recommended)
+
 Enable proxy mode in settings to route requests through `localhost:3001`. This solves CORS issues and works great for development and mobile testing.
 
 ### Option 2: Direct API Calls
+
 Works in some environments but may encounter CORS restrictions. Best for production deployments with proper CORS configuration.
 
 ### Option 3: Mobile Export
+
 Export chat as HTML file to run offline on mobile devices. Note: The exported HTML won't be able to make new API calls due to CORS restrictions.
 
 ## 📱 Mobile Usage
@@ -77,11 +83,13 @@ Export chat as HTML file to run offline on mobile devices. Note: The exported HT
 ## 🔧 Configuration
 
 ### Environment Variables (.env)
+
 ```bash
 PORT=3001  # Proxy server port
 ```
 
 ### API Key Storage
+
 API keys are stored locally in your browser's localStorage and never sent to any server except xAI's official API.
 
 ## 🎨 Tech Stack

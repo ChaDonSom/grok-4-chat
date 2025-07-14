@@ -1,14 +1,25 @@
 import express from "express"
 import cors from "cors"
 import dotenv from "dotenv"
+import path from "path"
+import { fileURLToPath } from "url"
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 dotenv.config()
 
 const app = express()
 const PORT = process.env.PORT || 3001
+const isProduction = process.env.NODE_ENV === "production"
 
 app.use(cors())
 app.use(express.json())
+
+// Serve static files in production
+if (isProduction) {
+  app.use(express.static(path.join(__dirname, "dist")))
+}
 
 // Health check endpoint
 app.get("/health", (req, res) => {
@@ -57,6 +68,13 @@ app.post("/api/chat", async (req, res) => {
     })
   }
 })
+
+// Serve the Vue app for all other routes in production
+if (isProduction) {
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "dist", "index.html"))
+  })
+}
 
 app.listen(PORT, () => {
   console.log(`🚀 Grok 4 Chat Proxy Server running on http://localhost:${PORT}`)
