@@ -12,14 +12,40 @@ interface Message {
 }
 
 // Reactive state
-const messages = ref<Message[]>([])
 const currentMessage = ref("")
 const isLoading = ref(false)
 const showApiKeyModal = ref(false)
 
-// Persistent storage for API key and settings
+// Persistent storage for API key, settings, and chat messages
 const apiKey = useStorage("grok-api-key", "")
 const useProxy = useStorage("grok-use-proxy", false)
+
+// Store messages with custom serializer to handle Date objects
+const messages = useStorage<Message[]>("grok-chat-messages", [], undefined, {
+  serializer: {
+    read: (v: any) => {
+      try {
+        const parsed = JSON.parse(v)
+        // Convert timestamp strings back to Date objects
+        return parsed.map((msg: any) => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp),
+        }))
+      } catch {
+        return []
+      }
+    },
+    write: (v: Message[]) => {
+      // Serialize messages with Date objects as ISO strings
+      return JSON.stringify(
+        v.map((msg) => ({
+          ...msg,
+          timestamp: msg.timestamp.toISOString(),
+        }))
+      )
+    },
+  },
+})
 
 // Computed
 const hasApiKey = computed(() => apiKey.value.trim() !== "")
