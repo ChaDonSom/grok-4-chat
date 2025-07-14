@@ -29,17 +29,60 @@ const copyMessage = () => {
   copy(props.message.content)
 }
 
-// Simple markdown-like formatting for links and basic formatting
+// Enhanced markdown formatting for Grok's responses
 const formattedContent = computed(() => {
   let content = props.message.content
 
-  // Convert URLs to clickable links
-  content = content.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>')
+  // Escape HTML first
+  content = content.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
 
-  // Basic formatting
+  // Code blocks with syntax highlighting (```language)
+  content = content.replace(/```(\w+)?\n([\s\S]*?)\n```/g, (_, lang, code) => {
+    return `<div class="code-block"><div class="code-header">${
+      lang || "code"
+    }</div><pre><code>${code.trim()}</code></pre></div>`
+  })
+
+  // Inline code (single backticks)
+  content = content.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
+
+  // Headers (# ## ###)
+  content = content.replace(/^### (.*$)/gm, "<h3>$1</h3>")
+  content = content.replace(/^## (.*$)/gm, "<h2>$1</h2>")
+  content = content.replace(/^# (.*$)/gm, "<h1>$1</h1>")
+
+  // Bold text (**text**)
   content = content.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-  content = content.replace(/\*(.*?)\*/g, "<em>$1</em>")
-  content = content.replace(/`(.*?)`/g, "<code>$1</code>")
+
+  // Italic text (*text*)
+  content = content.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, "<em>$1</em>")
+
+  // Blockquotes (> text)
+  content = content.replace(/^> (.*$)/gm, "<blockquote>$1</blockquote>")
+
+  // Numbered lists (1. item)
+  content = content.replace(/^(\d+)\.\s+(.*$)/gm, '<div class="list-item numbered">$1. $2</div>')
+
+  // Bullet lists (- item or * item)
+  content = content.replace(/^[-*]\s+(.*$)/gm, '<div class="list-item bullet">• $1</div>')
+
+  // Convert URLs to clickable links (after other formatting)
+  content = content.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>')
+
+  // Convert line breaks to proper paragraphs
+  content = content.replace(/\n\n/g, "</p><p>")
+  content = content.replace(/\n/g, "<br>")
+
+  // Wrap in paragraph tags if not already wrapped
+  if (
+    !content.includes("<h1>") &&
+    !content.includes("<h2>") &&
+    !content.includes("<h3>") &&
+    !content.includes('<div class="code-block">') &&
+    !content.includes("<blockquote>")
+  ) {
+    content = `<p>${content}</p>`
+  }
 
   return content
 })
@@ -161,7 +204,7 @@ const formattedContent = computed(() => {
   color: #e3f2fd;
 }
 
-.message-content :deep(code) {
+.message-content :deep(.inline-code) {
   background: rgba(0, 0, 0, 0.1);
   padding: 0.2rem 0.4rem;
   border-radius: 4px;
@@ -169,8 +212,123 @@ const formattedContent = computed(() => {
   font-size: 0.9em;
 }
 
-.user-message .message-content :deep(code) {
+.user-message .message-content :deep(.inline-code) {
   background: rgba(255, 255, 255, 0.2);
+}
+
+/* Code blocks */
+.message-content :deep(.code-block) {
+  margin: 1rem 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.user-message .message-content :deep(.code-block) {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.message-content :deep(.code-header) {
+  background: rgba(0, 0, 0, 0.1);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.user-message .message-content :deep(.code-header) {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.message-content :deep(.code-block pre) {
+  margin: 0;
+  padding: 1rem 0.75rem;
+  background: rgba(0, 0, 0, 0.03);
+  overflow-x: auto;
+}
+
+.user-message .message-content :deep(.code-block pre) {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.message-content :deep(.code-block code) {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  font-family: "Monaco", "Menlo", "Consolas", monospace;
+  font-size: 0.9em;
+  line-height: 1.4;
+}
+
+/* Headers */
+.message-content :deep(h1),
+.message-content :deep(h2),
+.message-content :deep(h3) {
+  margin: 1rem 0 0.5rem 0;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.message-content :deep(h1) {
+  font-size: 1.3em;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+  padding-bottom: 0.25rem;
+}
+
+.user-message .message-content :deep(h1) {
+  border-bottom-color: rgba(255, 255, 255, 0.3);
+}
+
+.message-content :deep(h2) {
+  font-size: 1.2em;
+}
+
+.message-content :deep(h3) {
+  font-size: 1.1em;
+}
+
+/* Blockquotes */
+.message-content :deep(blockquote) {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  background: rgba(0, 0, 0, 0.05);
+  border-left: 4px solid rgba(0, 0, 0, 0.2);
+  border-radius: 0 4px 4px 0;
+  font-style: italic;
+}
+
+.user-message .message-content :deep(blockquote) {
+  background: rgba(255, 255, 255, 0.1);
+  border-left-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Lists */
+.message-content :deep(.list-item) {
+  margin: 0.25rem 0;
+  padding-left: 0.5rem;
+}
+
+.message-content :deep(.list-item.numbered) {
+  font-weight: 500;
+}
+
+.message-content :deep(.list-item.bullet) {
+  position: relative;
+}
+
+/* Paragraphs */
+.message-content :deep(p) {
+  margin: 0.5rem 0;
+  line-height: 1.6;
+}
+
+.message-content :deep(p:first-child) {
+  margin-top: 0;
+}
+
+.message-content :deep(p:last-child) {
+  margin-bottom: 0;
 }
 
 .message-content :deep(strong) {

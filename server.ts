@@ -70,7 +70,7 @@ app.post("/api/chat", async (req, res) => {
 if (isProduction) {
   // Serve static files from dist directory
   app.use(express.static(path.join(__dirname, "dist")))
-  
+
   // Catch all handler: send back Vue app for any non-API routes
   app.get("/*", (req, res) => {
     res.sendFile(path.join(__dirname, "dist", "index.html"))
