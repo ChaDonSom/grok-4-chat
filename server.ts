@@ -14,10 +14,7 @@ const PORT = Number(process.env.PORT) || 3001
 const isProduction = process.env.NODE_ENV === "production"
 
 // CORS configuration
-app.use(cors({
-  origin: true,
-  credentials: true
-}))
+app.use(cors())
 app.use(express.json())
 
 // API routes first (before static files)
@@ -72,21 +69,18 @@ app.post("/api/chat", async (req, res) => {
 // Serve static files in production (after API routes)
 if (isProduction) {
   // Serve static files from dist directory
-  app.use(express.static(path.join(__dirname, "dist"), {
-    maxAge: '1d',
-    etag: false
-  }))
+  app.use(express.static(path.join(__dirname, "dist")))
   
   // Catch all handler: send back Vue app for any non-API routes
-  app.get("*", (req, res) => {
+  app.get("/*", (req, res) => {
     res.sendFile(path.join(__dirname, "dist", "index.html"))
   })
 } else {
   // Development mode - just serve a simple message
-  app.get("*", (req, res) => {
-    res.json({ 
+  app.get("/*", (req, res) => {
+    res.json({
       message: "Grok 4 Chat Server - Development Mode",
-      note: "Use 'npm run full-dev' to start both frontend and backend"
+      note: "Use 'npm run full-dev' to start both frontend and backend",
     })
   })
 }
