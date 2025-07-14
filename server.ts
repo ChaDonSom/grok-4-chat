@@ -10,17 +10,17 @@ const __dirname = path.dirname(__filename)
 dotenv.config()
 
 const app = express()
-const PORT = process.env.PORT || 3001
+const PORT = Number(process.env.PORT) || 3001
 const isProduction = process.env.NODE_ENV === "production"
 
-app.use(cors())
+// CORS configuration
+app.use(cors({
+  origin: true,
+  credentials: true
+}))
 app.use(express.json())
 
-// Serve static files in production
-if (isProduction) {
-  app.use(express.static(path.join(__dirname, "dist")))
-}
-
+// API routes first (before static files)
 // Health check endpoint
 app.get("/health", (req, res) => {
   res.json({ status: "OK", message: "Grok 4 Chat Proxy Server" })
@@ -69,14 +69,29 @@ app.post("/api/chat", async (req, res) => {
   }
 })
 
-// Serve the Vue app for all other routes in production
+// Serve static files in production (after API routes)
 if (isProduction) {
+  // Serve static files from dist directory
+  app.use(express.static(path.join(__dirname, "dist"), {
+    maxAge: '1d',
+    etag: false
+  }))
+  
+  // Catch all handler: send back Vue app for any non-API routes
   app.get("*", (req, res) => {
     res.sendFile(path.join(__dirname, "dist", "index.html"))
   })
+} else {
+  // Development mode - just serve a simple message
+  app.get("*", (req, res) => {
+    res.json({ 
+      message: "Grok 4 Chat Server - Development Mode",
+      note: "Use 'npm run full-dev' to start both frontend and backend"
+    })
+  })
 }
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Grok 4 Chat Proxy Server running on http://localhost:${PORT}`)
   console.log(`📋 Health check: http://localhost:${PORT}/health`)
   console.log(`💬 Chat endpoint: http://localhost:${PORT}/api/chat`)
