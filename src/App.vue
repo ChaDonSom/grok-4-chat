@@ -4,11 +4,16 @@ import { useStorage } from "@vueuse/core"
 import ChatMessage from "./components/ChatMessage.vue"
 import ApiKeyModal from "./components/ApiKeyModal.vue"
 
+const systemPrompt = useStorage("grok-system-prompt", "You are a helpful and concise AI assistant.")
+const costPerThousand = useStorage("grok-cost-per-1k", 0.002)
+
 interface Message {
   id: string
   role: "user" | "assistant"
   content: string
   timestamp: Date
+  tokens?: number
+  cost?: number
 }
 
 // Reactive state
@@ -51,6 +56,23 @@ const messages = useStorage<Message[]>("grok-chat-messages", [], undefined, {
 const hasApiKey = computed(() => apiKey.value.trim() !== "")
 const canSend = computed(() => currentMessage.value.trim() !== "" && !isLoading.value && hasApiKey.value)
 
+// Total cost for all assistant messages
+const totalCost = computed(() => {
+  return messages.value.reduce((sum, msg) => sum + (msg.cost ?? 0), 0)
+})
+
+// Estimate cost of resending the conversation (simulate sending all messages again)
+const estimateNextCost = computed(() => {
+  // Estimate input tokens: sum all message contents as input
+  const inputTokens = messages.value.reduce((sum, msg) => sum + (msg.tokens ?? 0), 0)
+  // Estimate output tokens: assume next reply is similar to last assistant reply
+  const lastAssistant = [...messages.value].reverse().find((m) => m.role === "assistant")
+  const outputTokens = lastAssistant?.tokens ?? 0
+  const inputCost = inputTokens * 0.000003
+  const outputCost = outputTokens * 0.000015
+  return inputCost + outputCost
+})
+
 // Chat container ref for auto-scroll
 const chatContainer = ref<HTMLElement>()
 
@@ -80,6 +102,13 @@ const sendMessage = async () => {
   try {
     await scrollToBottom()
 
+    // assemble chat payload
+    const payloadMessages = []
+    if (systemPrompt.value.trim()) {
+      payloadMessages.push({ role: "system", content: systemPrompt.value })
+    }
+    payloadMessages.push(...messages.value.map((msg) => ({ role: msg.role, content: msg.content })))
+
     let response: Response
 
     if (useProxy.value) {
@@ -92,17 +121,7 @@ const sendMessage = async () => {
         },
         body: JSON.stringify({
           apiKey: apiKey.value,
-          messages: [
-            {
-              role: "system",
-              content:
-                "You are Grok, a helpful and witty AI assistant. Be conversational, helpful, and occasionally humorous.",
-            },
-            ...messages.value.map((msg) => ({
-              role: msg.role,
-              content: msg.content,
-            })),
-          ],
+          messages: payloadMessages,
         }),
       })
     } else {
@@ -114,17 +133,7 @@ const sendMessage = async () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          messages: [
-            {
-              role: "system",
-              content:
-                "You are Grok, a helpful and witty AI assistant. Be conversational, helpful, and occasionally humorous.",
-            },
-            ...messages.value.map((msg) => ({
-              role: msg.role,
-              content: msg.content,
-            })),
-          ],
+          messages: payloadMessages,
           model: "grok-4",
           stream: false,
           temperature: 0.7,
@@ -148,11 +157,25 @@ const sendMessage = async () => {
     }
 
     const data = await response.json()
+
+    // compute usage cost if available (Grok 4: $3/1M input, $15/1M output)
+    let inputTokens: number | undefined
+    let outputTokens: number | undefined
+    if (data.usage) {
+      if (typeof data.usage.prompt_tokens === "number") inputTokens = data.usage.prompt_tokens
+      if (typeof data.usage.completion_tokens === "number") outputTokens = data.usage.completion_tokens
+    }
+    const inputCost = inputTokens != null ? inputTokens * 0.000003 : 0
+    const outputCost = outputTokens != null ? outputTokens * 0.000015 : 0
+    const computedCost = inputCost + outputCost
+
     const assistantMessage: Message = {
       id: (Date.now() + 1).toString(),
       role: "assistant",
       content: data.choices[0].message.content,
       timestamp: new Date(),
+      tokens: (inputTokens ?? 0) + (outputTokens ?? 0),
+      cost: computedCost,
     }
 
     messages.value.push(assistantMessage)
@@ -243,6 +266,14 @@ if (!hasApiKey.value) {
   <div class="app">
     <!-- Header -->
     <header class="header">
+      <div class="cost-summary">
+        <div>
+          Total Cost: <strong>${{ totalCost.toFixed(6) }}</strong>
+        </div>
+        <div>
+          Estimated Next Send: <strong>${{ estimateNextCost.toFixed(6) }}</strong>
+        </div>
+      </div>
       <h1>🚀 Grok 4 Chat</h1>
       <div class="header-actions">
         <button @click="showApiKeyModal = true" class="btn btn-secondary">
@@ -327,6 +358,18 @@ if (!hasApiKey.value) {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.cost-summary {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.cost-summary strong {
+  color: #764ba2;
 }
 
 .header-actions {

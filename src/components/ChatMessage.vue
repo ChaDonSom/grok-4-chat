@@ -7,6 +7,8 @@ interface Message {
   role: "user" | "assistant"
   content: string
   timestamp: Date
+  tokens?: number
+  cost?: number
 }
 
 interface Props {
@@ -86,6 +88,14 @@ const formattedContent = computed(() => {
 
   return content
 })
+
+const showUsage = computed(() => !isUser.value && (props.message.tokens || props.message.cost))
+const usageText = computed(() => {
+  if (!showUsage.value) return ""
+  const tokens = props.message.tokens ?? 0
+  const cost = props.message.cost ?? 0
+  return `Tokens: ${tokens.toLocaleString()} | Cost: $${cost.toFixed(6)}`
+})
 </script>
 
 <template>
@@ -107,6 +117,9 @@ const formattedContent = computed(() => {
       </div>
 
       <div class="message-content" v-html="formattedContent"></div>
+      <div v-if="showUsage" class="usage-info">
+        {{ usageText }}
+      </div>
     </div>
   </div>
 </template>
@@ -353,5 +366,12 @@ const formattedContent = computed(() => {
   .avatar {
     font-size: 1rem;
   }
+}
+
+.usage-info {
+  margin-top: 0.5rem;
+  font-size: 0.85em;
+  color: #888;
+  text-align: right;
 }
 </style>
