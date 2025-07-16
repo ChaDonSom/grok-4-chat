@@ -267,14 +267,6 @@ if (!hasApiKey.value) {
   <div class="app">
     <!-- Header -->
     <header class="header">
-      <div class="cost-summary">
-        <div>
-          Total Cost: <strong>${{ totalCost.toFixed(6) }}</strong>
-        </div>
-        <div>
-          Estimated Next Send: <strong>${{ estimateNextCost.toFixed(6) }}</strong>
-        </div>
-      </div>
       <h1>🚀 Grok 4 Chat</h1>
       <div class="header-actions">
         <button @click="showApiKeyModal = true" class="btn btn-secondary">
@@ -329,7 +321,15 @@ if (!hasApiKey.value) {
     </div>
 
     <!-- API Key Modal -->
-    <ApiKeyModal v-model:show="showApiKeyModal" v-model:api-key="apiKey" v-model:use-proxy="useProxy" />
+    <ApiKeyModal
+      v-model:show="showApiKeyModal"
+      v-model:api-key="apiKey"
+      v-model:use-proxy="useProxy"
+      :total-cost="totalCost"
+      :estimate-next-cost="estimateNextCost"
+    />
+
+    <!-- ...existing code... -->
   </div>
 </template>
 
@@ -361,16 +361,30 @@ if (!hasApiKey.value) {
   background-clip: text;
 }
 
-.cost-summary {
+/* Subtle cost summary footer */
+.cost-summary-footer {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(6px);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 0.5rem 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.cost-summary.subtle {
   display: flex;
   gap: 2rem;
   align-items: center;
-  font-size: 1rem;
-  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: #888;
+  opacity: 0.7;
 }
 
-.cost-summary strong {
+.cost-summary.subtle strong {
   color: #764ba2;
+  font-weight: 500;
 }
 
 .header-actions {

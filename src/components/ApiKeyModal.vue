@@ -5,6 +5,8 @@ interface Props {
   show: boolean
   apiKey: string
   useProxy?: boolean
+  totalCost?: number
+  estimateNextCost?: number
 }
 
 interface Emits {
@@ -76,6 +78,18 @@ const stopPropagation = (event: Event) => {
           <a href="https://console.x.ai/" target="_blank" rel="noopener noreferrer">xAI Console</a>.
         </p>
 
+        <!-- Cost summary (subtle) -->
+        <div v-if="typeof totalCost === 'number' && typeof estimateNextCost === 'number'" class="cost-summary-modal">
+          <div>
+            <span class="cost-label">Total Cost:</span>
+            <strong class="cost-value">${{ totalCost.toFixed(6) }}</strong>
+          </div>
+          <div>
+            <span class="cost-label">Estimated Next Send:</span>
+            <strong class="cost-value">${{ estimateNextCost.toFixed(6) }}</strong>
+          </div>
+        </div>
+
         <div class="input-group">
           <label for="api-key-input">🔑 xAI API Key:</label>
           <div class="input-with-toggle">
@@ -139,6 +153,26 @@ const stopPropagation = (event: Event) => {
 </template>
 
 <style scoped>
+/* Subtle cost summary for modal */
+.cost-summary-modal {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  font-size: 0.95rem;
+  color: #888;
+  opacity: 0.7;
+  margin-bottom: 1.5rem;
+  margin-top: -0.5rem;
+  justify-content: center;
+}
+.cost-summary-modal .cost-label {
+  font-weight: 400;
+  margin-right: 0.25rem;
+}
+.cost-summary-modal .cost-value {
+  color: #764ba2;
+  font-weight: 500;
+}
 .modal-overlay {
   position: fixed;
   top: 0;
