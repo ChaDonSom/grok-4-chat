@@ -5,7 +5,6 @@ import ChatMessage from "./components/ChatMessage.vue"
 import ApiKeyModal from "./components/ApiKeyModal.vue"
 
 const systemPrompt = useStorage("grok-system-prompt", "You are a helpful and concise AI assistant.")
-const costPerThousand = useStorage("grok-cost-per-1k", 0.002)
 
 interface Message {
   id: string
