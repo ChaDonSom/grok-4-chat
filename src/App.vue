@@ -121,6 +121,7 @@ const sendMessage = async () => {
         body: JSON.stringify({
           apiKey: apiKey.value,
           messages: payloadMessages,
+          search_parameters: {},
         }),
       })
     } else {
@@ -134,6 +135,7 @@ const sendMessage = async () => {
         body: JSON.stringify({
           messages: payloadMessages,
           model: "grok-4",
+          search_parameters: {},
           stream: false,
           temperature: 0.7,
         }),
