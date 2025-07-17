@@ -14,7 +14,7 @@
     "server:dev": "nodemon --exec tsx server.ts",
     "full-dev": "concurrently \"npm run server:dev\" \"npm run dev\"",
     "build-only": "vite build",
-    "start": "npm run build && npm run server"
+    "start": "npm run full-dev"
   },
   "dependencies": {
     "@vueuse/core": "^13.5.0",
