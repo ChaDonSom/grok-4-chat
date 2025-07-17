@@ -210,8 +210,67 @@ const clearChat = () => {
   messages.value = []
 }
 
-// Export chat as HTML for offline use
-const exportChat = () => {
+// Export chat as HTML with a smart title from Grok
+const exportChat = async () => {
+  let smartTitle = ""
+  try {
+    // Prepare a prompt to generate a short, descriptive title for the chat
+    const titlePrompt =
+      "Summarize this conversation in a short, descriptive title for a file name. Return only the title, no punctuation except dashes or spaces."
+    const payloadMessages = []
+    if (systemPrompt.value.trim()) {
+      payloadMessages.push({ role: "system", content: systemPrompt.value })
+    }
+    payloadMessages.push(...messages.value.map((msg) => ({ role: msg.role, content: msg.content })))
+    payloadMessages.push({ role: "user", content: titlePrompt })
+
+    let response: Response
+    if (useProxy.value) {
+      const apiUrl = import.meta.env.PROD ? "/api/chat" : "http://localhost:3001/api/chat"
+      response = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          apiKey: apiKey.value,
+          messages: payloadMessages,
+          search_parameters: {},
+          model: "grok-3-latest",
+        }),
+      })
+    } else {
+      response = await fetch("https://api.x.ai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey.value}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: payloadMessages,
+          model: "grok-3-latest",
+          search_parameters: {},
+          stream: false,
+          temperature: 0.7,
+        }),
+      })
+    }
+    if (response.ok) {
+      const data = await response.json()
+      smartTitle = data.choices?.[0]?.message?.content?.trim() || ""
+      // Sanitize for filename: remove illegal chars, trim, replace spaces with dashes
+      smartTitle = smartTitle
+        .replace(/[^a-zA-Z0-9\- ]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .toLowerCase()
+    }
+  } catch (e) {
+    // fallback to no title
+    smartTitle = ""
+  }
+  const dateStr = new Date().toISOString().split("T")[0]
+  const fileName = smartTitle ? `chat-${smartTitle}.html` : `grok-chat-${dateStr}.html`
+
   const chatHtml = `
 <!DOCTYPE html>
 <html lang="en">
@@ -231,7 +290,9 @@ const exportChat = () => {
 </head>
 <body>
     <div class="chat-export">
-        <h1>Grok 4 Chat - ${new Date().toLocaleDateString()}</h1>
+        <h1>Grok 4 Chat - ${
+          smartTitle ? smartTitle.replace(/-/g, " ") + " - " : ""
+        }${new Date().toLocaleDateString()}</h1>
         ${messages.value
           .map(
             (msg) => `
@@ -250,7 +311,7 @@ const exportChat = () => {
   const url = URL.createObjectURL(blob)
   const a = document.createElement("a")
   a.href = url
-  a.download = `grok-chat-${new Date().toISOString().split("T")[0]}.html`
+  a.download = fileName
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)
@@ -273,9 +334,7 @@ if (!hasApiKey.value) {
           {{ hasApiKey ? "⚙️ Settings" : "🔑 Set API Key" }}
         </button>
         <button @click="clearChat" class="btn btn-secondary" :disabled="messages.length === 0">🗑️ Clear</button>
-        <button @click="exportChat" class="btn btn-secondary" :disabled="messages.length === 0">
-          📱 Export for Mobile
-        </button>
+        <button @click="exportChat" class="btn btn-secondary" :disabled="messages.length === 0">� Export</button>
       </div>
     </header>
 
