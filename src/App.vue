@@ -334,7 +334,7 @@ if (!hasApiKey.value) {
           {{ hasApiKey ? "⚙️ Settings" : "🔑 Set API Key" }}
         </button>
         <button @click="clearChat" class="btn btn-secondary" :disabled="messages.length === 0">🗑️ Clear</button>
-        <button @click="exportChat" class="btn btn-secondary" :disabled="messages.length === 0">� Export</button>
+        <button @click="exportChat" class="btn btn-secondary" :disabled="messages.length === 0">📤 Export</button>
       </div>
     </header>
 
